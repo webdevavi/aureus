@@ -4,6 +4,12 @@ Aureus is an automated **financial report extraction and rendering system** that
 
 ---
 
+## Architecture Diagram
+
+![Architecture Diagram](./diagram.png)
+
+---
+
 ## Prerequisites
 
 Before running the project locally, ensure you have the following installed:

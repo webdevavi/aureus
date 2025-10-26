@@ -107,10 +107,11 @@
   </head>
 
   <body class="p-2 m-0 box-border flex flex-col gap-4 font-fira">
-    {% macro safe_val(v, suffix='') -%} {{ '-' if v is none else (v|string +
-    suffix) }} {%- endmacro %} {% macro safe_num(v, default=0.0) -%} {{ default
-    if v is none else v }} {%- endmacro %} {% macro safe_sum(values) -%} {%- if
-    values is sequence and values is not string -%} {%- set ns =
+    {% macro safe_val(v, suffix='') -%} {%- if v is none or v == '' or
+    v|string|lower in ['null', 'none'] -%} - {%- else -%} {{ v|string + suffix
+    }} {%- endif -%} {%- endmacro %} {% macro safe_num(v, default=0.0) -%} {{
+    default if v is none else v }} {%- endmacro %} {% macro safe_sum(values) -%}
+    {%- if values is sequence and values is not string -%} {%- set ns =
     namespace(total=0.0) -%} {%- for v in values -%} {%- if v is not none and v
     is number -%} {%- set ns.total = ns.total + v -%} {%- endif -%} {%- endfor
     -%} {{ ns.total }} {%- else -%} 0.0 {%- endif -%} {%- endmacro %}

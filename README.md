@@ -58,13 +58,47 @@ npm install
 cd ..
 ```
 
-### 5. Start the infrastructure (Postgres, MinIO, RabbitMQ)
+### 5. Add a `.env` file
+
+Create a new file named `.env` at the root of the project and add the following:
+
+```bash
+API_BASE_URL="http://localhost:8000"
+CORS_ORIGIN="http://localhost:5173"
+
+MAX_WORKERS=4
+
+POSTGRES_HOST="localhost"
+POSTGRES_USER="aureus"
+POSTGRES_PASSWORD="<generate new secret>"
+POSTGRES_DB="aureus"
+POSTGRES_PORT=5432
+
+MINIO_BUCKET="aureus"
+MINIO_PORT=9000
+MINIO_ENDPOINT="http://localhost:9000"
+MINIO_ACCESS_KEY="aureus"
+MINIO_SECRET_KEY="<generate new secret>"
+MINIO_REGION=""
+
+RABBITMQ_DEFAULT_USER="aureus"
+RABBITMQ_DEFAULT_PASS="<generate new secret>"
+RABBITMQ_PORT=5673
+RABBITMQ_URL="amqp://aureus:<generate new secret>@localhost:5673/"
+RABBITMQ_EXCHANGE="aureus"
+
+OPENAI_API_KEY="<your OpenAI API key>"
+```
+
+> ⚠️ Make sure to generate strong random secrets for all passwords before deployment.
+
+### 6. Start the infrastructure (Postgres, MinIO, RabbitMQ)
 
 ```bash
 make up
 ```
 
-### 6. Launch all services (API, frontend, workers)
+### 7. Launch all services (API, frontend, workers)
 
 ```bash
 make dev
@@ -76,11 +110,11 @@ This will start:
 - Vite frontend (port `5173`)
 - Extractor & Renderer background workers
 
-### 7. Access the UI
+### 8. Access the UI
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 8. Stop the stack
+### 9. Stop the stack
 
 ```bash
 make stop
@@ -111,13 +145,6 @@ make stop
 
 ---
 
-## Example Output Reports
-
-Generated sample reports (from provided test documents):
-
-1. `JSW_Energy_Q2FY26_Report.pdf`
-2. `Eternal_Shareholders_Letter_Q2FY26_Report.pdf`
-
 Each report includes:
 
 - Key highlights summary
@@ -125,12 +152,16 @@ Each report includes:
 - Consolidated financial metrics
 - Auto-generated analyst commentary
 
+---
+
 ## Notes
 
 - Supports both **PDF** and **TXT** source files.
 - Automatically queues jobs for extraction and rendering once upload is complete.
 - Uses presigned MinIO URLs for upload/download.
 - Workers auto-detect file type and run the appropriate parsing pipeline.
+
+---
 
 ## Folder Structure
 
@@ -146,6 +177,8 @@ aureus/
 ├── Makefile                 # Dev automation commands
 └── README.md
 ```
+
+---
 
 ## Author
 

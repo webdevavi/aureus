@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "report_meta",
+    "summary",
+    "company_snapshot",
+    "shareholding_pattern",
+    "price_performance",
+    "financial_highlights",
+    "outlook_and_valuation",
+    "key_highlights"
+  ],
+  "properties": {
+    "report_meta": { "type": "object" },
+    "summary": { "type": "object" },
+    "company_snapshot": { "type": "object" },
+    "shareholding_pattern": { "type": "object" },
+    "price_performance": { "type": "object" },
+    "financial_highlights": { "type": "object" },
+    "outlook_and_valuation": { "type": "object" },
+    "key_highlights": { "type": "array" }
+  }
+}

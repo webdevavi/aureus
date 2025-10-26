@@ -1,0 +1,76 @@
+services:
+  aureus-postgres:
+    image: postgres:16
+    container_name: aureus-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - aureus
+    restart: unless-stopped
+
+  aureus-minio:
+    image: minio/minio:latest
+    container_name: aureus-minio
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    ports:
+      - ${MINIO_PORT:-9000}:9000
+    volumes:
+      - ./data/minio:/data
+    networks:
+      - aureus
+    restart: unless-stopped
+
+  aureus-minio-init:
+    image: minio/mc:latest
+    container_name: aureus-minio-init
+    depends_on:
+      - aureus-minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-reports}
+    entrypoint: >
+      sh -c "
+        echo '⏳ Waiting for MinIO to start...';
+        for i in $(seq 1 10); do
+          mc alias set local http://aureus-minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD} && break || sleep 3;
+        done;
+        mc mb -p local/$${MINIO_BUCKET} || true;
+        mc anonymous set private local/$${MINIO_BUCKET} || true;
+        echo '✅ MinIO setup complete — bucket '$${MINIO_BUCKET}' ready.'
+      "
+    networks:
+      - aureus
+    restart: "no"
+
+  aureus-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: aureus-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    ports:
+      - ${RABBITMQ_PORT:-5672}:5672
+      - 15673:15672
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - aureus
+    restart: unless-stopped
+
+networks:
+  aureus:
+    driver: bridge

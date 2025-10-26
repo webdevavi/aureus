@@ -232,6 +232,13 @@ aureus/
 
 ---
 
+### What “Aureus” Means
+
+The name **Aureus** comes from the Latin word for _"golden"_ — symbolizing excellence, precision, and value.  
+It reflects the project’s goal: turning raw, unstructured financial data into **refined, golden insights** through automation and intelligent processing.
+
+---
+
 ## Author
 
 **Avinash Sinha**  

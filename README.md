@@ -175,6 +175,46 @@ Each report includes:
 
 ---
 
+### GPU Acceleration (Optional)
+
+Aureus supports **GPU-accelerated OCR** when running on machines with **CUDA** and **NVIDIA drivers**.
+
+The **EasyOCR** module automatically detects and uses a GPU if available; otherwise, it runs on CPU with no extra configuration required.
+
+#### To enable GPU acceleration:
+
+1. **Install NVIDIA drivers**
+
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y nvidia-driver-550
+   ```
+
+2. **Verify GPU availability**
+
+   ```bash
+   nvidia-smi
+   ```
+
+3. **Install PyTorch with CUDA support**
+
+   ```bash
+   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+   ```
+
+4. **(Optional) Force GPU usage**
+   ```python
+   import easyocr
+   reader = easyocr.Reader(['en'], gpu=True)
+   ```
+
+#### Notes
+
+- If you skip these steps, EasyOCR will default to **CPU mode**, which is fully supported — just slower.
+- The rest of the Aureus stack (API, Renderer, Frontend) is **CPU-only** and does not depend on CUDA.
+
+---
+
 ## Folder Structure
 
 ```

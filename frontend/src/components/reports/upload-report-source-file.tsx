@@ -59,7 +59,7 @@ export const UploadReportSourceFile: React.FC<UploadReportSourceFileProps> = ({
         });
 
         await axios.put(upload_url, file, {
-          headers: { "Content-Type": "application/pdf" },
+          headers: { "Content-Type": file.type },
           onUploadProgress: (evt) => {
             if (!evt.total) return;
             const percent = Math.round((evt.loaded / evt.total) * 100);

@@ -1,6 +1,7 @@
 import { useRetryReportProcessing } from "@/api/mutations/use-retry-report-processing";
 import { useGetReportFiles } from "@/api/queries/use-get-report-files";
 import type { Report } from "@/types/report";
+import { FileStatus } from "@/types/report-file";
 import { ClipboardIcon, Loader2, RefreshCcw } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
@@ -47,7 +48,7 @@ export const ReportItem: React.FC<ReportItemProps> = ({ report, onSelect }) => {
     }
   };
 
-  if (!sourceFile) {
+  if (!sourceFile || sourceFile.status !== FileStatus.done) {
     return (
       <Item
         variant="outline"

@@ -24,6 +24,7 @@ import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import { ReportFileItem } from "./report-file";
 import { UploadReportSourceFile } from "./upload-report-source-file";
+import { FileStatus } from "@/types/report-file";
 
 interface ReportItemModalProps {
   report: Report;
@@ -87,7 +88,7 @@ export const ReportItemModal: React.FC<ReportItemModalProps> = ({
       );
     }
 
-    if (sourceFile) {
+    if (sourceFile && sourceFile.status === FileStatus.done) {
       const processingCount = [sourceFile, extractFile, outputFile].filter(
         (f) => f?.status === "processing"
       ).length;

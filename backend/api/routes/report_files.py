@@ -15,7 +15,7 @@ from backend.api.db.models.report_file import (
     FileCategory,
     FileStatus,
 )
-from backend.api.minio_client import get_minio_client
+from backend.api.s3_client import presigned_get_object, presigned_put_object
 
 router = APIRouter(prefix="/reports/{report_id}/files", tags=["report_files"])
 settings = get_settings()
@@ -40,16 +40,20 @@ async def create_presigned_upload_url(
         )
     )
     existing_file = result.scalar_one_or_none()
-    minio = get_minio_client()
 
     if existing_file:
         status = getattr(existing_file.status, "value", str(existing_file.status))
         if status == FileStatus.error.value:
             try:
-                upload_url = minio.presigned_put_object(
-                    bucket_name=existing_file.s3_bucket or settings.minio_bucket,
+                upload_url = presigned_put_object(
+                    bucket_name=existing_file.s3_bucket or settings.s3_bucket,
                     object_name=existing_file.s3_key,
                     expires=timedelta(hours=1),
+                    content_type=(
+                        "text/plain"
+                        if existing_file.type == FileType.txt
+                        else "application/pdf"
+                    ),
                 )
             except Exception as e:
                 raise HTTPException(500, f"Error generating presigned URL: {e}")
@@ -69,13 +73,13 @@ async def create_presigned_upload_url(
         if status == FileStatus.done.value:
             raise HTTPException(400, "File already completed successfully.")
 
-    s3_key = f"{file_type.lower()}_{uuid.uuid4()}.{file_type}"
+    s3_key = f"{file_type.lower()}_{uuid.uuid4()}.{file_type.value}"
     file_record = ReportFile(
         report_id=report_id,
         type=file_type,
         category=category,
         s3_key=s3_key,
-        s3_bucket=settings.minio_bucket,
+        s3_bucket=settings.s3_bucket,
         status=FileStatus.pending,
     )
     session.add(file_record)
@@ -87,10 +91,19 @@ async def create_presigned_upload_url(
         raise HTTPException(400, f"Integrity error: {e.orig}")
 
     try:
-        upload_url = minio.presigned_put_object(
-            bucket_name=settings.minio_bucket,
+        upload_url = presigned_put_object(
+            bucket_name=settings.s3_bucket,
             object_name=s3_key,
             expires=timedelta(hours=1),
+            content_type=(
+                "text/plain"
+                if file_type == FileType.txt
+                else (
+                    "application/json"
+                    if file_type == FileType.json
+                    else "application/pdf"
+                )
+            ),
         )
     except Exception as e:
         raise HTTPException(500, f"Error generating presigned URL: {e}")
@@ -99,7 +112,7 @@ async def create_presigned_upload_url(
         "file_id": file_record.id,
         "upload_url": upload_url,
         "s3_key": s3_key,
-        "s3_bucket": settings.minio_bucket,
+        "s3_bucket": settings.s3_bucket,
         "file_type": file_type,
         "category": category,
         "status": file_record.status,
@@ -132,15 +145,20 @@ async def get_download_url(
     if not file:
         raise HTTPException(404, "File not found")
 
-    minio = get_minio_client()
     try:
-        download_url = minio.presigned_get_object(
-            bucket_name=file.s3_bucket or settings.minio_bucket,
+        download_url = presigned_get_object(
+            bucket_name=file.s3_bucket or settings.s3_bucket,
             object_name=file.s3_key,
             expires=timedelta(hours=1),
             response_headers={
-                "response-content-type": (
-                    "text/plain" if file.type == FileType.txt else "application/pdf"
+                "ResponseContentType": (
+                    "text/plain"
+                    if file.type == FileType.txt
+                    else (
+                        "application/json"
+                        if file.type == FileType.json
+                        else "application/pdf"
+                    )
                 )
             },
         )

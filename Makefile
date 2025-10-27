@@ -30,9 +30,6 @@ renderer:
 	python -m backend.workers.renderer.main | tee $(LOG_DIR)/renderer.log
 
 dev:
-	@echo "Starting Aureus local development stack..."
-	docker compose up -d
-	sleep 5
 	@echo "Infra ready. Starting all services with Honcho..."
 	honcho start
 

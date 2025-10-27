@@ -14,14 +14,15 @@ Aureus is an automated **financial report extraction and rendering system** that
 
 Before running the project locally, ensure you have the following installed:
 
-| Tool                        | Recommended Version | Notes                                         |
-| --------------------------- | ------------------- | --------------------------------------------- |
-| **Python**                  | 3.11+               | For backend API and workers                   |
-| **Node.js**                 | 18+                 | For Vite frontend                             |
-| **npm**                     | latest              | To install frontend dependencies              |
-| **Docker & Docker Compose** | latest              | To run Postgres, RabbitMQ, and MinIO services |
-| **Playwright**              | latest              | Required for PDF rendering (Chromium)         |
-| **Make**                    | any                 | Used to manage local development commands     |
+| Tool                 | Recommended Version           | Notes                                                 |
+| -------------------- | ----------------------------- | ----------------------------------------------------- |
+| **Python**           | 3.11+                         | For backend API and workers                           |
+| **Node.js**          | 18+                           | For Vite frontend                                     |
+| **npm**              | latest                        | To install frontend dependencies                      |
+| **PostgreSQL**       | 15+                           | For storing reports and file metadata                 |
+| **RabbitMQ**         | latest                        | For async job orchestration between workers           |
+| **S3-compatible OS** | Any (AWS S3, R2, MinIO, etc.) | Used for storing PDFs, extracted JSON, and HTML files |
+| **Playwright**       | latest                        | Required for PDF rendering (Chromium)                 |
 
 ---
 
@@ -85,37 +86,33 @@ CORS_ORIGIN="http://localhost:5173"
 
 MAX_WORKERS=4
 
+
 POSTGRES_HOST="localhost"
 POSTGRES_USER="aureus"
-POSTGRES_PASSWORD="<generate new secret>"
+POSTGRES_PASSWORD="<your_db_password>"
 POSTGRES_DB="aureus"
 POSTGRES_PORT=5432
 
-MINIO_BUCKET="aureus"
-MINIO_PORT=9000
-MINIO_ENDPOINT="http://localhost:9900"
-MINIO_ACCESS_KEY="aureus"
-MINIO_SECRET_KEY="<generate new secret>"
-MINIO_REGION=""
 
-RABBITMQ_DEFAULT_USER="aureus"
-RABBITMQ_DEFAULT_PASS="<generate new secret>"
-RABBITMQ_PORT=5673
-RABBITMQ_URL="amqp://aureus:<generate new secret>@localhost:5673/"
+S3_BUCKET="aureus"
+S3_REGION=""
+S3_ACCESS_KEY="<your_s3_access_key>"
+S3_SECRET_KEY="<your_s3_secret_key>"
+S3_ENDPOINT="https://s3.amazonaws.com"
+
+
+RABBITMQ_URL="amqp://user:password@localhost:5672/"
 RABBITMQ_EXCHANGE="aureus"
 
-OPENAI_API_KEY="<your OpenAI API key>"
+
+OPENAI_API_KEY="<your_openai_api_key>"
 ```
 
-> ⚠️ Make sure to generate strong random secrets for all passwords before deployment.
+> 💡 You can use **AWS S3**, **Cloudflare R2**, or **MinIO** — all are supported via standard boto3 client configuration.
 
-### 7. Start the infrastructure (Postgres, MinIO, RabbitMQ)
+---
 
-```bash
-make up
-```
-
-### 8. Launch all services (API, frontend, workers)
+### 7. Launch all services (API, frontend, workers)
 
 ```bash
 make dev
@@ -127,11 +124,11 @@ This will start:
 - Vite frontend (port `5173`)
 - Extractor & Renderer background workers
 
-### 9. Access the UI
+### 8. Access the UI
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 10. Stop the stack
+### 9. Stop the stack
 
 ```bash
 make stop
@@ -141,14 +138,14 @@ make stop
 
 ## Tech Stack
 
-| Layer              | Technology                                                               |
-| ------------------ | ------------------------------------------------------------------------ |
-| **Backend API**    | FastAPI + SQLAlchemy (async)                                             |
-| **Workers**        | Python (aio-pika, pdfplumber, pandas, OpenAI API, MinIO SDK, Playwright) |
-| **Frontend**       | React + Vite + TailwindCSS                                               |
-| **Message Queue**  | RabbitMQ (for async job orchestration)                                   |
-| **Object Storage** | MinIO (S3-compatible, stores PDFs/JSON/HTML)                             |
-| **Database**       | PostgreSQL                                                               |
+| Layer              | Technology                                                           |
+| ------------------ | -------------------------------------------------------------------- |
+| **Backend API**    | FastAPI + SQLAlchemy (async)                                         |
+| **Workers**        | Python (aio-pika, pdfplumber, pandas, OpenAI API, boto3, Playwright) |
+| **Frontend**       | React + Vite + TailwindCSS                                           |
+| **Message Queue**  | RabbitMQ (for async job orchestration)                               |
+| **Object Storage** | S3-compatible (AWS S3 / R2 / MinIO)                                  |
+| **Database**       | PostgreSQL                                                           |
 
 ---
 
@@ -231,7 +228,6 @@ aureus/
 │       ├── extractor/       # PDF/TXT parsing + JSON generation
 │       └── renderer/        # HTML → PDF rendering
 ├── frontend/                # React + Vite UI
-├── docker-compose.yml       # Infrastructure stack
 ├── Makefile                 # Dev automation commands
 └── README.md
 ```

@@ -1,15 +1,5 @@
 SHELL := /bin/bash
-
-
-up:
-	docker compose up -d
-
-down:
-	docker compose down
-
-clean:
-	docker compose down -v
-	rm -rf data/postgres data/minio $(LOG_DIR)
+LOG_DIR := logs
 
 api:
 	uvicorn backend.api.main:app --port 8000 --reload
@@ -40,3 +30,14 @@ stop:
 	-pkill -f "backend.workers.extractor.main" || true
 	-pkill -f "backend.workers.renderer.main" || true
 	@echo "Local processes stopped."
+
+prod:
+	@echo "Starting Aureus in production mode..."
+	mkdir -p $(LOG_DIR)
+	@echo "Logs will be written to $(LOG_DIR)/honcho.log"
+	nohup honcho start -f Procfile.prod > $(LOG_DIR)/honcho.log 2>&1 &
+	@echo "All processes started in background."
+	@echo "Use 'make logs' to follow logs or 'make stop' to terminate."
+
+logs:
+	tail -f $(LOG_DIR)/honcho.log

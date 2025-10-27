@@ -5,7 +5,6 @@ from backend.api.config.settings import get_settings
 
 async def publish_job(payload: dict, queue_name: str):
     settings = get_settings()
-    print(settings.rabbitmq_url)
     connection = await aio_pika.connect_robust(settings.rabbitmq_url)
     async with connection:
         channel = await connection.channel()

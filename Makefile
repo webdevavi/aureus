@@ -31,13 +31,15 @@ stop:
 	-pkill -f "backend.workers.renderer.main" || true
 	@echo "Local processes stopped."
 
+.PHONY: api frontend extractor renderer dev stop prod view-logs
+
 prod:
 	@echo "Starting Aureus in production mode..."
 	mkdir -p $(LOG_DIR)
 	@echo "Logs will be written to $(LOG_DIR)/honcho.log"
 	nohup honcho start -f Procfile.prod > $(LOG_DIR)/honcho.log 2>&1 &
 	@echo "All processes started in background."
-	@echo "Use 'make logs' to follow logs or 'make stop' to terminate."
+	@echo "Use 'make view-logs' to follow logs or 'make stop' to terminate."
 
-logs:
+view-logs:
 	tail -f $(LOG_DIR)/honcho.log

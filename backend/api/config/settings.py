@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     rabbitmq_url: str = Field(..., alias="RABBITMQ_URL")
     rabbitmq_exchange: str = Field(..., alias="RABBITMQ_EXCHANGE")
 
-    cors_origin: str = Field(..., alias="CORS_ORIGIN")
+    cors_origins: str = Field(..., alias="CORS_ORIGINS")
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

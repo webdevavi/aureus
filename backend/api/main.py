@@ -11,10 +11,16 @@ app = FastAPI(title="Aureus API")
 
 settings = get_settings()
 
+origins = (
+    [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+    if settings.cors_origins != "*"
+    else ["*"]
+)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.cors_origin],
-    allow_credentials=True,
+    allow_origins=origins,
+    allow_credentials=(settings.cors_origins != "*"),
     allow_methods=["*"],
     allow_headers=["*"],
 )
